@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/appStore'
 import ScheduleVisual from './ScheduleVisual.vue'
 import LoaderSpinner from '../shared/LoaderSpinner.vue'
@@ -21,6 +22,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const store = useAppStore()
+const router = useRouter()
 
 const isSubmitting = ref(false)
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
@@ -36,10 +38,7 @@ watch(
 
 const schema = yup.object({
   clientName: yup.string().required('Введите имя клиента'),
-  clientPhone: yup
-    .string()
-    .required('Введите телефон')
-    .matches(/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/, 'Телефон в формате +7 (XXX) XXX-XX-XX'),
+  clientPhone: yup.string().required('Введите телефон'),
   clientCar: yup.string().required('Укажите автомобиль'),
   date: yup.string().required('Выберите дату'),
   time: yup.string().required('Выберите время'),
@@ -47,9 +46,9 @@ const schema = yup.object({
 })
 
 const defaultValues = computed(() => ({
-  clientName: '',
-  clientPhone: '',
-  clientCar: '',
+  clientName: store.currentUser?.name ?? '',
+  clientPhone: store.currentUser?.phone ?? '',
+  clientCar: store.currentUser?.car ?? '',
   date: selectedDate.value,
   time: '',
   notes: '',
@@ -59,12 +58,28 @@ const close = () => {
   emit('update:modelValue', false)
 }
 
+const goToAuth = () => {
+  close()
+  router.push({
+    name: 'user-login',
+    query: {
+      redirect: router.currentRoute.value.fullPath,
+    },
+  })
+}
+
 const handleSubmit = async (values, { resetForm }) => {
+  if (!store.currentUser) {
+    goToAuth()
+    return
+  }
+
   isSubmitting.value = true
   try {
     store.addAppointment({
       ...values,
       serviceId: props.service.id,
+      userId: store.currentUser.id,
       status: 'ожидает',
     })
 
@@ -154,7 +169,33 @@ const formatPhone = (event, field) => {
             </div>
           </header>
 
+          <div
+            v-if="!store.currentUser"
+            class="space-y-4 p-5"
+          >
+            <div class="rounded-lg border border-amber-500/40 bg-amber-950/30 p-3 text-sm text-amber-100">
+              Чтобы записаться на услугу и потом видеть свои бронирования, войдите или зарегистрируйтесь.
+            </div>
+            <div class="flex justify-end gap-2">
+              <button
+                type="button"
+                class="am-btn-secondary"
+                @click="close"
+              >
+                Закрыть
+              </button>
+              <button
+                type="button"
+                class="am-btn-primary"
+                @click="goToAuth"
+              >
+                Войти или зарегистрироваться
+              </button>
+            </div>
+          </div>
+
           <Form
+            v-else
             class="grid gap-4 p-4 sm:grid-cols-2 sm:p-5"
             :validation-schema="schema"
             :initial-values="defaultValues"
@@ -307,4 +348,3 @@ const formatPhone = (event, field) => {
     </transition>
   </teleport>
 </template>
-

@@ -1,6 +1,12 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import { useAppStore } from './stores/appStore'
 import AppToast from './components/shared/AppToast.vue'
+
+const store = useAppStore()
+
+const userFirstName = computed(() => store.currentUser?.name.split(' ')[0] ?? '')
 </script>
 
 <template>
@@ -33,7 +39,35 @@ import AppToast from './components/shared/AppToast.vue'
             </div>
           </RouterLink>
 
-          <nav class="flex items-center gap-2 text-xs sm:text-sm">
+          <nav class="flex flex-wrap items-center justify-end gap-2 text-xs sm:text-sm">
+            <RouterLink
+              v-if="store.currentUser"
+              to="/profile/appointments"
+              class="am-btn-secondary"
+            >
+              Мои записи
+            </RouterLink>
+            <span
+              v-if="store.currentUser"
+              class="hidden text-xs text-slate-400 sm:inline"
+            >
+              {{ userFirstName }}
+            </span>
+            <button
+              v-if="store.currentUser"
+              type="button"
+              class="am-btn-secondary"
+              @click="store.logoutUser()"
+            >
+              Выйти
+            </button>
+            <RouterLink
+              v-else
+              to="/login"
+              class="am-btn-secondary"
+            >
+              Войти
+            </RouterLink>
             <RouterLink
               to="/admin/login"
               class="am-btn-primary"
@@ -61,4 +95,3 @@ import AppToast from './components/shared/AppToast.vue'
     </div>
   </div>
 </template>
-

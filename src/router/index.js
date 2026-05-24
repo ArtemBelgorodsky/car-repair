@@ -21,6 +21,22 @@ const router = createRouter({
       },
     },
     {
+      path: '/login',
+      name: 'user-login',
+      component: () => import('../views/UserAuthView.vue'),
+      meta: {
+        public: true,
+      },
+    },
+    {
+      path: '/profile/appointments',
+      name: 'user-appointments',
+      component: () => import('../views/MyAppointmentsView.vue'),
+      meta: {
+        requiresUser: true,
+      },
+    },
+    {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
       meta: {
@@ -60,6 +76,15 @@ router.beforeEach((to) => {
 
   if (to.meta.requiresAuth && !store.isAdminLogged) {
     return { name: 'admin-login' }
+  }
+
+  if (to.meta.requiresUser && !store.currentUser) {
+    return {
+      name: 'user-login',
+      query: {
+        redirect: to.fullPath,
+      },
+    }
   }
 
   return true
