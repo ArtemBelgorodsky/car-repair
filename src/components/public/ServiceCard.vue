@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useAppStore } from '../../stores/appStore'
 import {
   BanknotesIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
+  StarIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/vue/24/outline'
 
@@ -16,6 +18,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['book'])
+const store = useAppStore()
+
+const serviceReviews = computed(() =>
+  store.reviews.filter((review) => review.serviceId === props.service.id)
+)
+
+const averageRating = computed(() => {
+  if (serviceReviews.value.length === 0) return '0.0'
+  const total = serviceReviews.value.reduce((sum, review) => sum + Number(review.rating), 0)
+  return (total / serviceReviews.value.length).toFixed(1)
+})
 
 const categoryBadgeClass = computed(() => {
   switch (props.service.category) {
@@ -91,6 +104,17 @@ const categoryBadgeClass = computed(() => {
           </dt>
           <dd class="font-semibold text-emerald-300">
             {{ service.price.toLocaleString('ru-RU') }} ₽
+          </dd>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <dt class="inline-flex items-center gap-1 text-slate-400">
+            <StarIcon class="h-3.5 w-3.5 fill-amber-300 stroke-amber-300" />
+            <span>Отзывы</span>
+          </dt>
+          <dd class="font-medium text-slate-100">
+            <span class="text-amber-200">{{ averageRating }}</span>
+            <span class="text-slate-500">/5 · </span>
+            {{ serviceReviews.length }}
           </dd>
         </div>
       </dl>
