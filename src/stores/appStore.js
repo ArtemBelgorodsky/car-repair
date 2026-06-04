@@ -3,7 +3,11 @@
 
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { services as initialServices, appointments as initialAppointments } from '../mocks/data'
+import {
+  services as initialServices,
+  appointments as initialAppointments,
+  reviews as initialReviews,
+} from '../mocks/data'
 
 const STORAGE_KEY = 'automaster-app-state'
 
@@ -24,9 +28,10 @@ export const useAppStore = defineStore('app', () => {
   const users = ref(savedState?.users ?? [])
   const currentUserId = ref(savedState?.currentUserId ?? null)
 
-  // Справочник услуг и список записей
+  // Справочник услуг, список записей и отзывы клиентов
   const services = ref(savedState?.services ?? [...initialServices])
   const appointments = ref(savedState?.appointments ?? [...initialAppointments])
+  const reviews = ref(savedState?.reviews ?? [...initialReviews])
 
   const currentUser = computed(() =>
     users.value.find((user) => user.id === currentUserId.value) ?? null
@@ -39,13 +44,14 @@ export const useAppStore = defineStore('app', () => {
   )
 
   watch(
-    [services, appointments, users, currentUserId, isAdminLogged],
+    [services, appointments, reviews, users, currentUserId, isAdminLogged],
     () => {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           services: services.value,
           appointments: appointments.value,
+          reviews: reviews.value,
           users: users.value,
           currentUserId: currentUserId.value,
           isAdminLogged: isAdminLogged.value,
@@ -61,6 +67,16 @@ export const useAppStore = defineStore('app', () => {
 
   const getAppointmentsByDate = (date) =>
     computed(() => appointments.value.filter((a) => a.date === date))
+
+  const isAppointmentSlotBusy = (serviceId, date, time, excludeAppointmentId = null) =>
+    appointments.value.some(
+      (appointment) =>
+        appointment.id !== excludeAppointmentId &&
+        appointment.serviceId === serviceId &&
+        appointment.date === date &&
+        appointment.time === time &&
+        appointment.status !== 'отменена'
+    )
 
   // CRUD для услуг
   const addService = (service) => {
@@ -85,11 +101,17 @@ export const useAppStore = defineStore('app', () => {
 
   // CRUD для записей
   const addAppointment = (appointment) => {
+    if (isAppointmentSlotBusy(appointment.serviceId, appointment.date, appointment.time)) {
+      return false
+    }
+
     appointments.value.push({
       ...appointment,
       id: appointment.id || `app-${Date.now()}`,
       userId: appointment.userId ?? currentUserId.value,
     })
+
+    return true
   }
 
   const updateAppointment = (id, patch) => {
@@ -101,6 +123,32 @@ export const useAppStore = defineStore('app', () => {
 
   const removeAppointment = (id) => {
     appointments.value = appointments.value.filter((a) => a.id !== id)
+  }
+
+  const addReview = (review) => {
+    if (review.appointmentId) {
+      const appointment = appointments.value.find((item) => item.id === review.appointmentId)
+      const alreadyReviewed = reviews.value.some((item) => item.appointmentId === review.appointmentId)
+
+      if (
+        !appointment ||
+        appointment.userId !== currentUserId.value ||
+        appointment.serviceId !== review.serviceId ||
+        appointment.status !== 'выполнена' ||
+        alreadyReviewed
+      ) {
+        return false
+      }
+    }
+
+    reviews.value.push({
+      ...review,
+      id: review.id || `rev-${Date.now()}`,
+      userId: review.userId ?? currentUserId.value,
+      createdAt: review.createdAt || new Date().toISOString(),
+    })
+
+    return true
   }
 
   const registerUser = ({ name, phone, car, email, password }) => {
@@ -186,9 +234,11 @@ export const useAppStore = defineStore('app', () => {
     userAppointments,
     services,
     appointments,
+    reviews,
     // вычисляемые геттеры
     getAppointmentsByServiceAndDate,
     getAppointmentsByDate,
+    isAppointmentSlotBusy,
     // методы
     addService,
     updateService,
@@ -196,6 +246,7 @@ export const useAppStore = defineStore('app', () => {
     addAppointment,
     updateAppointment,
     removeAppointment,
+    addReview,
     registerUser,
     loginUser,
     logoutUser,

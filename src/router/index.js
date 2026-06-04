@@ -37,6 +37,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/services/:serviceId/reviews',
+      name: 'service-reviews',
+      component: () => import('../views/ServiceReviewsView.vue'),
+      meta: {
+        public: true,
+      },
+    },
+    {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
       meta: {
@@ -56,6 +64,11 @@ const router = createRouter({
           path: 'appointments',
           name: 'admin-appointments',
           component: () => import('../views/AdminAppointmentsView.vue'),
+        },
+        {
+          path: 'reviews',
+          name: 'admin-reviews',
+          component: () => import('../views/AdminReviewsView.vue'),
         },
       ],
     },

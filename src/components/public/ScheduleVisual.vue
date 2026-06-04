@@ -35,10 +35,8 @@ const timeSlots = computed(() => {
   return result
 })
 
-const appointmentsForDay = store.getAppointmentsByServiceAndDate(props.serviceId, props.date)
-
 const isSlotBusy = (time) =>
-  appointmentsForDay.value.some((a) => a.time === time && a.status !== 'отменена')
+  store.isAppointmentSlotBusy(props.serviceId, props.date, time)
 </script>
 
 <template>

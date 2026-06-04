@@ -166,3 +166,30 @@ export const appointments = [
   },
 ]
 
+export const reviews = [
+  {
+    id: 'rev-001',
+    serviceId: 'srv-oil-change',
+    clientName: 'Иван Петров',
+    rating: 5,
+    comment: 'Быстро заменили масло и сразу подсказали, на что обратить внимание перед дальней поездкой.',
+    createdAt: '2026-02-16T11:20:00',
+  },
+  {
+    id: 'rev-002',
+    serviceId: 'srv-ac-service',
+    clientName: 'Екатерина Орлова',
+    rating: 4,
+    comment: 'Понравилось, что запись прошла без звонков. По кондиционеру всё объяснили понятно.',
+    createdAt: '2026-02-17T15:45:00',
+  },
+  {
+    id: 'rev-003',
+    serviceId: 'srv-body-repair',
+    clientName: 'Алексей Смирнов',
+    rating: 5,
+    comment: 'Кузовной ремонт сделали аккуратно, цвет подобрали хорошо. Спасибо мастерам.',
+    createdAt: '2026-02-18T09:10:00',
+  },
+]
+

@@ -1,6 +1,12 @@
 <script setup>
 import { computed } from 'vue'
-import { BanknotesIcon, ClockIcon, WrenchScrewdriverIcon } from '@heroicons/vue/24/outline'
+import { RouterLink } from 'vue-router'
+import {
+  BanknotesIcon,
+  ChatBubbleLeftRightIcon,
+  ClockIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   service: {
@@ -89,13 +95,22 @@ const categoryBadgeClass = computed(() => {
         </div>
       </dl>
 
-      <button
-        type="button"
-        class="am-btn-primary mt-1 w-full justify-center text-sm"
-        @click="emit('book', service)"
-      >
-        Записаться
-      </button>
+      <div class="grid gap-2 sm:grid-cols-2">
+        <button
+          type="button"
+          class="am-btn-primary justify-center text-sm"
+          @click="emit('book', service)"
+        >
+          Записаться
+        </button>
+        <RouterLink
+          :to="{ name: 'service-reviews', params: { serviceId: service.id } }"
+          class="am-btn-secondary justify-center text-sm"
+        >
+          <ChatBubbleLeftRightIcon class="h-4 w-4" />
+          Отзывы
+        </RouterLink>
+      </div>
     </div>
   </article>
 </template>

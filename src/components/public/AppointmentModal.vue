@@ -26,6 +26,28 @@ const router = useRouter()
 
 const isSubmitting = ref(false)
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
+const timeSlots = [
+  '09:00',
+  '09:30',
+  '10:00',
+  '10:30',
+  '11:00',
+  '11:30',
+  '12:00',
+  '12:30',
+  '13:00',
+  '13:30',
+  '14:00',
+  '14:30',
+  '15:00',
+  '15:30',
+  '16:00',
+  '16:30',
+  '17:00',
+  '17:30',
+  '18:00',
+  '18:30',
+]
 
 watch(
   () => props.modelValue,
@@ -68,20 +90,47 @@ const goToAuth = () => {
   })
 }
 
+const isSlotBusy = (time) =>
+  store.isAppointmentSlotBusy(props.service.id, selectedDate.value, time)
+
 const handleSubmit = async (values, { resetForm }) => {
   if (!store.currentUser) {
     goToAuth()
     return
   }
 
+  if (store.isAppointmentSlotBusy(props.service.id, values.date, values.time)) {
+    window.dispatchEvent(
+      new CustomEvent('app:toast', {
+        detail: {
+          type: 'error',
+          message: 'Это время уже занято для выбранной услуги. Выберите другой слот.',
+        },
+      })
+    )
+    return
+  }
+
   isSubmitting.value = true
   try {
-    store.addAppointment({
+    const ok = store.addAppointment({
       ...values,
       serviceId: props.service.id,
       userId: store.currentUser.id,
       status: 'ожидает',
     })
+
+    if (!ok) {
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: {
+            type: 'error',
+            message: 'Это время уже занято для выбранной услуги. Выберите другой слот.',
+          },
+        })
+      )
+      return
+    }
 
     window.dispatchEvent(
       new CustomEvent('app:toast', {
@@ -281,17 +330,21 @@ const formatPhone = (event, field) => {
                       Выберите время
                     </option>
                     <option
-                      v-for="slot in ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30']"
+                      v-for="slot in timeSlots"
                       :key="slot"
                       :value="slot"
+                      :disabled="isSlotBusy(slot)"
                     >
-                      {{ slot }}
+                      {{ slot }}{{ isSlotBusy(slot) ? ' — занято' : '' }}
                     </option>
                   </Field>
                   <ErrorMessage
                     name="time"
                     class="mt-1 block text-xs text-red-400"
                   />
+                  <p class="mt-1 text-[11px] text-slate-500">
+                    Занятые слоты недоступны для выбора.
+                  </p>
                 </div>
               </div>
 

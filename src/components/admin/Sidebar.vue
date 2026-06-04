@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/appStore'
 import {
   CalendarDaysIcon,
+  ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   PowerIcon,
   WrenchScrewdriverIcon,
@@ -23,6 +24,11 @@ const links = [
     name: 'Записи',
     routeName: 'admin-appointments',
     icon: CalendarDaysIcon,
+  },
+  {
+    name: 'Отзывы',
+    routeName: 'admin-reviews',
+    icon: ChatBubbleLeftRightIcon,
   },
 ]
 
