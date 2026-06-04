@@ -91,7 +91,7 @@ const goToAuth = () => {
 }
 
 const isSlotBusy = (time) =>
-  store.isAppointmentSlotBusy(props.service.id, selectedDate.value, time)
+  store.isAppointmentSlotBusy(props.service.id, selectedDate.value, time, props.service.duration)
 
 const handleSubmit = async (values, { resetForm }) => {
   if (!store.currentUser) {
@@ -99,12 +99,12 @@ const handleSubmit = async (values, { resetForm }) => {
     return
   }
 
-  if (store.isAppointmentSlotBusy(props.service.id, values.date, values.time)) {
+  if (store.isAppointmentSlotBusy(props.service.id, values.date, values.time, props.service.duration)) {
     window.dispatchEvent(
       new CustomEvent('app:toast', {
         detail: {
           type: 'error',
-          message: 'Это время уже занято для выбранной услуги. Выберите другой слот.',
+          message: 'Это время недоступно: услуга не успеет завершиться до закрытия или слот уже занят.',
         },
       })
     )
@@ -125,7 +125,7 @@ const handleSubmit = async (values, { resetForm }) => {
         new CustomEvent('app:toast', {
           detail: {
             type: 'error',
-            message: 'Это время уже занято для выбранной услуги. Выберите другой слот.',
+            message: 'Это время недоступно: услуга не успеет завершиться до закрытия или слот уже занят.',
           },
         })
       )
@@ -343,7 +343,7 @@ const formatPhone = (event, field) => {
                     class="mt-1 block text-xs text-red-400"
                   />
                   <p class="mt-1 text-[11px] text-slate-500">
-                    Занятые слоты недоступны для выбора.
+                    Недоступны занятые слоты и время, когда услуга завершится после 19:00.
                   </p>
                 </div>
               </div>

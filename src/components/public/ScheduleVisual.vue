@@ -36,7 +36,7 @@ const timeSlots = computed(() => {
 })
 
 const isSlotBusy = (time) =>
-  store.isAppointmentSlotBusy(props.serviceId, props.date, time)
+  store.isAppointmentSlotBusy(props.serviceId, props.date, time, props.durationHours)
 </script>
 
 <template>

@@ -3,10 +3,12 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import {
+  BellAlertIcon,
   CalendarDaysIcon,
   ClockIcon,
   NoSymbolIcon,
   WrenchScrewdriverIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -67,6 +69,56 @@ const cancelAppointment = (appointment) => {
         Новая запись
       </RouterLink>
     </header>
+
+    <section
+      v-if="store.userNotifications.length > 0"
+      class="am-section space-y-3"
+    >
+      <header class="flex items-center justify-between gap-3">
+        <div>
+          <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+            <BellAlertIcon class="h-4 w-4" />
+            Уведомления
+          </p>
+          <h2 class="mt-1 text-base font-semibold text-slate-50">
+            Изменения по вашим заявкам
+          </h2>
+        </div>
+        <span class="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300 ring-1 ring-slate-800">
+          {{ store.userNotifications.length }}
+        </span>
+      </header>
+
+      <div class="grid gap-2">
+        <article
+          v-for="notification in store.userNotifications"
+          :key="notification.id"
+          class="flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-sm"
+          :class="
+            notification.type === 'error'
+              ? 'border-red-500/40 bg-red-950/25 text-red-100'
+              : 'border-emerald-500/40 bg-emerald-950/25 text-emerald-100'
+          "
+        >
+          <div>
+            <p>
+              {{ notification.message }}
+            </p>
+            <p class="mt-1 text-[11px] opacity-70">
+              {{ new Date(notification.createdAt).toLocaleString('ru-RU') }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 rounded-lg p-1 opacity-70 transition hover:bg-slate-950/30 hover:opacity-100"
+            aria-label="Закрыть уведомление"
+            @click="store.removeNotification(notification.id)"
+          >
+            <XMarkIcon class="h-4 w-4" />
+          </button>
+        </article>
+      </div>
+    </section>
 
     <section
       v-if="store.userAppointments.length === 0"

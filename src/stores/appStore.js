@@ -10,6 +10,14 @@ import {
 } from '../mocks/data'
 
 const STORAGE_KEY = 'automaster-app-state'
+const WORKDAY_END_MINUTES = 19 * 60
+
+const timeToMinutes = (time) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+const durationToMinutes = (durationHours) => Math.round(Number(durationHours || 1) * 60)
 
 const readSavedState = () => {
   try {
@@ -32,6 +40,7 @@ export const useAppStore = defineStore('app', () => {
   const services = ref(savedState?.services ?? [...initialServices])
   const appointments = ref(savedState?.appointments ?? [...initialAppointments])
   const reviews = ref(savedState?.reviews ?? [...initialReviews])
+  const notifications = ref(savedState?.notifications ?? [])
 
   const currentUser = computed(() =>
     users.value.find((user) => user.id === currentUserId.value) ?? null
@@ -43,8 +52,14 @@ export const useAppStore = defineStore('app', () => {
       .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`))
   )
 
+  const userNotifications = computed(() =>
+    notifications.value
+      .filter((notification) => notification.userId === currentUserId.value)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  )
+
   watch(
-    [services, appointments, reviews, users, currentUserId, isAdminLogged],
+    [services, appointments, reviews, notifications, users, currentUserId, isAdminLogged],
     () => {
       localStorage.setItem(
         STORAGE_KEY,
@@ -52,6 +67,7 @@ export const useAppStore = defineStore('app', () => {
           services: services.value,
           appointments: appointments.value,
           reviews: reviews.value,
+          notifications: notifications.value,
           users: users.value,
           currentUserId: currentUserId.value,
           isAdminLogged: isAdminLogged.value,
@@ -68,8 +84,24 @@ export const useAppStore = defineStore('app', () => {
   const getAppointmentsByDate = (date) =>
     computed(() => appointments.value.filter((a) => a.date === date))
 
-  const isAppointmentSlotBusy = (serviceId, date, time, excludeAppointmentId = null) =>
-    appointments.value.some(
+  const getServiceDuration = (serviceId) =>
+    services.value.find((service) => service.id === serviceId)?.duration ?? 1
+
+  const isAppointmentSlotBusy = (
+    serviceId,
+    date,
+    time,
+    durationHours = null,
+    excludeAppointmentId = null
+  ) => {
+    const start = timeToMinutes(time)
+    const end = start + durationToMinutes(durationHours ?? getServiceDuration(serviceId))
+
+    if (end > WORKDAY_END_MINUTES) {
+      return true
+    }
+
+    return appointments.value.some(
       (appointment) =>
         appointment.id !== excludeAppointmentId &&
         appointment.serviceId === serviceId &&
@@ -77,6 +109,24 @@ export const useAppStore = defineStore('app', () => {
         appointment.time === time &&
         appointment.status !== 'отменена'
     )
+  }
+
+  const addNotification = ({ userId, appointmentId, type, message }) => {
+    if (!userId) return
+
+    notifications.value.push({
+      id: `ntf-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      userId,
+      appointmentId,
+      type,
+      message,
+      createdAt: new Date().toISOString(),
+    })
+  }
+
+  const removeNotification = (id) => {
+    notifications.value = notifications.value.filter((notification) => notification.id !== id)
+  }
 
   // CRUD для услуг
   const addService = (service) => {
@@ -114,10 +164,34 @@ export const useAppStore = defineStore('app', () => {
     return true
   }
 
-  const updateAppointment = (id, patch) => {
+  const updateAppointment = (id, patch, options = { notifyClient: true }) => {
     const index = appointments.value.findIndex((a) => a.id === id)
     if (index !== -1) {
+      const previous = appointments.value[index]
       appointments.value[index] = { ...appointments.value[index], ...patch }
+
+      if (options.notifyClient && patch.status && patch.status !== previous.status) {
+        const serviceName =
+          services.value.find((service) => service.id === previous.serviceId)?.name ?? 'выбранную услугу'
+
+        if (patch.status === 'подтверждена') {
+          addNotification({
+            userId: previous.userId,
+            appointmentId: previous.id,
+            type: 'success',
+            message: `Ваша запись на услугу «${serviceName}» подтверждена администратором.`,
+          })
+        }
+
+        if (patch.status === 'отменена') {
+          addNotification({
+            userId: previous.userId,
+            appointmentId: previous.id,
+            type: 'error',
+            message: `Ваша запись на услугу «${serviceName}» отклонена администратором.`,
+          })
+        }
+      }
     }
   }
 
@@ -207,7 +281,7 @@ export const useAppStore = defineStore('app', () => {
       return false
     }
 
-    updateAppointment(id, { status: 'отменена' })
+    updateAppointment(id, { status: 'отменена' }, { notifyClient: false })
     return true
   }
 
@@ -232,6 +306,7 @@ export const useAppStore = defineStore('app', () => {
     currentUserId,
     currentUser,
     userAppointments,
+    userNotifications,
     services,
     appointments,
     reviews,
@@ -247,6 +322,7 @@ export const useAppStore = defineStore('app', () => {
     updateAppointment,
     removeAppointment,
     addReview,
+    removeNotification,
     registerUser,
     loginUser,
     logoutUser,
