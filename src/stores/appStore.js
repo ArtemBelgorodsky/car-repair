@@ -6,6 +6,8 @@ import { defineStore } from 'pinia'
 import {
   services as initialServices,
   appointments as initialAppointments,
+  employees as initialEmployees,
+  payrolls as initialPayrolls,
   reviews as initialReviews,
 } from '../mocks/data'
 
@@ -39,6 +41,8 @@ export const useAppStore = defineStore('app', () => {
   // Справочник услуг, список записей и отзывы клиентов
   const services = ref(savedState?.services ?? [...initialServices])
   const appointments = ref(savedState?.appointments ?? [...initialAppointments])
+  const employees = ref(savedState?.employees ?? [...initialEmployees])
+  const payrolls = ref(savedState?.payrolls ?? [...initialPayrolls])
   const reviews = ref(savedState?.reviews ?? [...initialReviews])
   const notifications = ref(savedState?.notifications ?? [])
 
@@ -59,13 +63,15 @@ export const useAppStore = defineStore('app', () => {
   )
 
   watch(
-    [services, appointments, reviews, notifications, users, currentUserId, isAdminLogged],
+    [services, appointments, employees, payrolls, reviews, notifications, users, currentUserId, isAdminLogged],
     () => {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           services: services.value,
           appointments: appointments.value,
+          employees: employees.value,
+          payrolls: payrolls.value,
           reviews: reviews.value,
           notifications: notifications.value,
           users: users.value,
@@ -199,6 +205,27 @@ export const useAppStore = defineStore('app', () => {
     appointments.value = appointments.value.filter((a) => a.id !== id)
   }
 
+  const addPayroll = ({ employeeId, amount, paidAt }) => {
+    const employeeExists = employees.value.some((employee) => employee.id === employeeId)
+    const normalizedAmount = Number(amount)
+
+    if (!employeeExists || !Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      return false
+    }
+
+    const nextId =
+      payrolls.value.reduce((max, payroll) => Math.max(max, Number(payroll.id) || 0), 0) + 1
+
+    payrolls.value.unshift({
+      id: nextId,
+      employeeId,
+      amount: Number(normalizedAmount.toFixed(2)),
+      paidAt: paidAt || new Date().toISOString(),
+    })
+
+    return true
+  }
+
   const addReview = (review) => {
     if (review.appointmentId) {
       const appointment = appointments.value.find((item) => item.id === review.appointmentId)
@@ -225,7 +252,7 @@ export const useAppStore = defineStore('app', () => {
     return true
   }
 
-  const registerUser = ({ name, phone, car, email, password }) => {
+  const registerUser = ({ name, phone, car, licensePlate, carYear, vin, email, password }) => {
     const normalizedEmail = email.trim().toLowerCase()
     const exists = users.value.some((user) => user.email === normalizedEmail)
 
@@ -241,6 +268,9 @@ export const useAppStore = defineStore('app', () => {
       name: name.trim(),
       phone: phone.trim(),
       car: car.trim(),
+      licensePlate: licensePlate.trim().toUpperCase(),
+      carYear: Number(carYear),
+      vin: vin.trim().toUpperCase(),
       email: normalizedEmail,
       password,
     }
@@ -309,6 +339,8 @@ export const useAppStore = defineStore('app', () => {
     userNotifications,
     services,
     appointments,
+    employees,
+    payrolls,
     reviews,
     // вычисляемые геттеры
     getAppointmentsByServiceAndDate,
@@ -321,6 +353,7 @@ export const useAppStore = defineStore('app', () => {
     addAppointment,
     updateAppointment,
     removeAppointment,
+    addPayroll,
     addReview,
     removeNotification,
     registerUser,

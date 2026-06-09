@@ -62,6 +62,9 @@ const schema = yup.object({
   clientName: yup.string().required('Введите имя клиента'),
   clientPhone: yup.string().required('Введите телефон'),
   clientCar: yup.string().required('Укажите автомобиль'),
+  clientLicensePlate: yup.string().required('Укажите госномер'),
+  clientCarYear: yup.number().typeError('Введите год выпуска').required('Введите год выпуска'),
+  clientVin: yup.string().required('Укажите VIN'),
   date: yup.string().required('Выберите дату'),
   time: yup.string().required('Выберите время'),
   notes: yup.string().max(500, 'Максимум 500 символов').nullable(),
@@ -71,6 +74,9 @@ const defaultValues = computed(() => ({
   clientName: store.currentUser?.name ?? '',
   clientPhone: store.currentUser?.phone ?? '',
   clientCar: store.currentUser?.car ?? '',
+  clientLicensePlate: store.currentUser?.licensePlate ?? '',
+  clientCarYear: store.currentUser?.carYear ?? '',
+  clientVin: store.currentUser?.vin ?? '',
   date: selectedDate.value,
   time: '',
   notes: '',
@@ -194,7 +200,7 @@ const formatPhone = (event, field) => {
         class="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm"
       >
         <div
-          class="am-card relative w-full max-w-xl overflow-hidden border border-slate-700 bg-slate-950/95"
+          class="am-card relative max-h-[92vh] w-full max-w-2xl overflow-hidden border border-slate-700 bg-slate-950/95"
         >
           <header
             class="border-b border-slate-800 bg-gradient-to-r from-indigo-600/20 via-slate-900 to-slate-900 px-5 py-4"
@@ -245,7 +251,7 @@ const formatPhone = (event, field) => {
 
           <Form
             v-else
-            class="grid gap-4 p-4 sm:grid-cols-2 sm:p-5"
+            class="grid max-h-[calc(92vh-86px)] gap-4 overflow-y-auto p-4 sm:grid-cols-2 sm:p-5"
             :validation-schema="schema"
             :initial-values="defaultValues"
             @submit="handleSubmit"
@@ -292,10 +298,56 @@ const formatPhone = (event, field) => {
                   id="clientCar"
                   name="clientCar"
                   class="am-input"
-                  placeholder="Например, Toyota Camry 2020"
+                  placeholder="Например, Toyota Camry"
                 />
                 <ErrorMessage
                   name="clientCar"
+                  class="mt-1 block text-xs text-red-400"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="am-label" for="clientLicensePlate">Госномер</label>
+                  <Field
+                    id="clientLicensePlate"
+                    name="clientLicensePlate"
+                    class="am-input uppercase"
+                    placeholder="А123ВС 77"
+                  />
+                  <ErrorMessage
+                    name="clientLicensePlate"
+                    class="mt-1 block text-xs text-red-400"
+                  />
+                </div>
+
+                <div>
+                  <label class="am-label" for="clientCarYear">Год выпуска</label>
+                  <Field
+                    id="clientCarYear"
+                    name="clientCarYear"
+                    type="number"
+                    class="am-input"
+                    placeholder="2020"
+                  />
+                  <ErrorMessage
+                    name="clientCarYear"
+                    class="mt-1 block text-xs text-red-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="am-label" for="clientVin">VIN</label>
+                <Field
+                  id="clientVin"
+                  name="clientVin"
+                  class="am-input uppercase"
+                  maxlength="17"
+                  placeholder="XTA00000000000000"
+                />
+                <ErrorMessage
+                  name="clientVin"
                   class="mt-1 block text-xs text-red-400"
                 />
               </div>

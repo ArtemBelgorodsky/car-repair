@@ -7,6 +7,7 @@ import {
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   PowerIcon,
+  UserGroupIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/vue/24/outline'
 
@@ -24,6 +25,11 @@ const links = [
     name: 'Записи',
     routeName: 'admin-appointments',
     icon: CalendarDaysIcon,
+  },
+  {
+    name: 'Мастера',
+    routeName: 'admin-employees',
+    icon: UserGroupIcon,
   },
   {
     name: 'Отзывы',

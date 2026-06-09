@@ -24,6 +24,17 @@ const registerSchema = yup.object({
   name: yup.string().required('Введите имя'),
   phone: yup.string().required('Введите телефон'),
   car: yup.string().required('Укажите автомобиль'),
+  licensePlate: yup.string().required('Введите госномер автомобиля'),
+  carYear: yup
+    .number()
+    .typeError('Введите год выпуска')
+    .min(1950, 'Год выпуска слишком ранний')
+    .max(new Date().getFullYear() + 1, 'Проверьте год выпуска')
+    .required('Введите год выпуска'),
+  vin: yup
+    .string()
+    .required('Введите VIN')
+    .matches(/^[A-HJ-NPR-Z0-9]{17}$/i, 'VIN должен содержать 17 символов без I, O и Q'),
   email: yup.string().required('Введите почту').email('Введите корректную почту'),
   password: yup.string().required('Введите пароль').min(6, 'Минимум 6 символов'),
 })
@@ -202,9 +213,46 @@ const formatPhone = (event, field) => {
             id="car"
             name="car"
             class="am-input"
-            placeholder="Toyota Camry 2020"
+            placeholder="Toyota Camry"
           />
           <ErrorMessage name="car" class="mt-1 block text-xs text-red-400" />
+        </div>
+
+        <div>
+          <label class="am-label" for="licensePlate">Госномер</label>
+          <Field
+            id="licensePlate"
+            name="licensePlate"
+            class="am-input uppercase"
+            placeholder="А123ВС 77"
+          />
+          <ErrorMessage name="licensePlate" class="mt-1 block text-xs text-red-400" />
+        </div>
+
+        <div>
+          <label class="am-label" for="carYear">Год выпуска</label>
+          <Field
+            id="carYear"
+            name="carYear"
+            type="number"
+            min="1950"
+            :max="new Date().getFullYear() + 1"
+            class="am-input"
+            placeholder="2020"
+          />
+          <ErrorMessage name="carYear" class="mt-1 block text-xs text-red-400" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="am-label" for="vin">VIN</label>
+          <Field
+            id="vin"
+            name="vin"
+            class="am-input uppercase"
+            maxlength="17"
+            placeholder="XTA00000000000000"
+          />
+          <ErrorMessage name="vin" class="mt-1 block text-xs text-red-400" />
         </div>
 
         <div>

@@ -26,6 +26,7 @@ const editable = reactive({
   date: props.appointment.date,
   time: props.appointment.time,
   status: props.appointment.status,
+  employeeId: props.appointment.employeeId ?? '',
   notes: props.appointment.notes,
 })
 
@@ -36,6 +37,7 @@ watch(
     editable.date = value.date
     editable.time = value.time
     editable.status = value.status
+    editable.employeeId = value.employeeId ?? ''
     editable.notes = value.notes
   }
 )
@@ -71,6 +73,7 @@ const save = () => {
     date: editable.date,
     time: editable.time,
     status: editable.status,
+    employeeId: editable.employeeId,
     notes: editable.notes,
   })
 
@@ -157,6 +160,27 @@ const save = () => {
                 {{ editable.status }}
               </span>
             </div>
+
+            <div>
+              <p class="am-label">
+                Назначенный мастер
+              </p>
+              <select
+                v-model="editable.employeeId"
+                class="am-input"
+              >
+                <option value="">
+                  Не назначен
+                </option>
+                <option
+                  v-for="employee in store.employees"
+                  :key="employee.id"
+                  :value="employee.id"
+                >
+                  {{ employee.name }} — {{ employee.position }}
+                </option>
+              </select>
+            </div>
           </div>
 
           <div class="space-y-2">
@@ -169,6 +193,24 @@ const save = () => {
               </p>
               <p class="text-slate-300">
                 {{ appointment.clientPhone }}
+              </p>
+            </div>
+
+            <div>
+              <p class="am-label">
+                Автомобиль
+              </p>
+              <p class="text-slate-100">
+                {{ appointment.clientCar }}
+              </p>
+              <p class="text-slate-300">
+                Госномер: {{ appointment.clientLicensePlate || '—' }}
+              </p>
+              <p class="text-slate-300">
+                Год выпуска: {{ appointment.clientCarYear || '—' }}
+              </p>
+              <p class="break-all text-slate-300">
+                VIN: {{ appointment.clientVin || '—' }}
               </p>
             </div>
 

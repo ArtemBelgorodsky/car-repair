@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useAppStore } from '../../stores/appStore'
 import AppointmentCard from './AppointmentCard.vue'
 
 const props = defineProps({
@@ -14,10 +15,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select'])
+const store = useAppStore()
 
 const servicesMap = computed(() => {
   const map = new Map()
   props.services.forEach((s) => map.set(s.id, s))
+  return map
+})
+
+const employeesMap = computed(() => {
+  const map = new Map()
+  store.employees.forEach((employee) => map.set(employee.id, employee))
   return map
 })
 
@@ -58,6 +66,9 @@ const sortedAppointments = computed(() =>
               Автомобиль
             </th>
             <th class="px-3 py-2 text-left">
+              Мастер
+            </th>
+            <th class="px-3 py-2 text-left">
               Телефон
             </th>
             <th class="px-3 py-2 text-left">
@@ -84,7 +95,26 @@ const sortedAppointments = computed(() =>
               {{ servicesMap.get(appointment.serviceId)?.name ?? '—' }}
             </td>
             <td class="px-3 py-2 text-slate-300">
-              {{ appointment.clientCar }}
+              <p class="text-slate-100">
+                {{ appointment.clientCar }}
+              </p>
+              <p class="text-[11px] text-slate-400">
+                {{ appointment.clientLicensePlate || '—' }} · {{ appointment.clientCarYear || '—' }}
+              </p>
+              <p class="break-all text-[11px] text-slate-500">
+                VIN: {{ appointment.clientVin || '—' }}
+              </p>
+            </td>
+            <td class="px-3 py-2 text-slate-300">
+              <p class="text-slate-100">
+                {{ employeesMap.get(appointment.employeeId)?.name ?? 'Не назначен' }}
+              </p>
+              <p
+                v-if="employeesMap.get(appointment.employeeId)"
+                class="text-[11px] text-slate-500"
+              >
+                {{ employeesMap.get(appointment.employeeId).position }}
+              </p>
             </td>
             <td class="px-3 py-2 text-slate-300">
               {{ appointment.clientPhone }}

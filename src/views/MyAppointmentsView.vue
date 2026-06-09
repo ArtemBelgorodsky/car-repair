@@ -19,6 +19,12 @@ const servicesMap = computed(() => {
   return map
 })
 
+const employeesMap = computed(() => {
+  const map = new Map()
+  store.employees.forEach((employee) => map.set(employee.id, employee))
+  return map
+})
+
 const statusClass = (status) => {
   switch (status) {
     case 'подтверждена':
@@ -188,6 +194,21 @@ const cancelAppointment = (appointment) => {
         <div class="space-y-1 text-sm">
           <p class="text-slate-300">
             Автомобиль: <span class="text-slate-100">{{ appointment.clientCar }}</span>
+          </p>
+          <p class="text-slate-300">
+            Госномер: <span class="text-slate-100">{{ appointment.clientLicensePlate || '—' }}</span>
+          </p>
+          <p class="text-slate-300">
+            Год выпуска: <span class="text-slate-100">{{ appointment.clientCarYear || '—' }}</span>
+          </p>
+          <p class="break-all text-slate-300">
+            VIN: <span class="text-slate-100">{{ appointment.clientVin || '—' }}</span>
+          </p>
+          <p class="text-slate-300">
+            Мастер:
+            <span class="text-slate-100">
+              {{ employeesMap.get(appointment.employeeId)?.name ?? 'не назначен' }}
+            </span>
           </p>
           <p class="text-slate-300">
             Телефон: <span class="text-slate-100">{{ appointment.clientPhone }}</span>

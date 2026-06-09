@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useAppStore } from '../../stores/appStore'
 
 const props = defineProps({
   appointment: {
@@ -11,6 +12,12 @@ const props = defineProps({
     required: true,
   },
 })
+
+const store = useAppStore()
+
+const employee = computed(() =>
+  store.employees.find((item) => item.id === props.appointment.employeeId)
+)
 
 const statusBadgeClass = computed(() => {
   switch (props.appointment.status) {
@@ -50,6 +57,9 @@ const statusBadgeClass = computed(() => {
     </div>
     <p class="line-clamp-1 text-[10px] text-slate-300">
       {{ appointment.clientCar }}
+    </p>
+    <p class="line-clamp-1 text-[10px] text-slate-400">
+      Мастер: {{ employee?.name ?? 'не назначен' }}
     </p>
     <p class="mt-0.5 text-[10px] text-slate-400">
       {{ appointment.clientPhone }}

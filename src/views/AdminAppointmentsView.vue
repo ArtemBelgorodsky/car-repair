@@ -17,6 +17,7 @@ const today = new Date().toISOString().slice(0, 10)
 const selectedDate = ref(today)
 const selectedServiceId = ref('all')
 const selectedStatus = ref('all')
+const selectedEmployeeId = ref('all')
 const viewMode = ref('schedule')
 
 const selectedAppointment = ref(null)
@@ -31,6 +32,7 @@ const filteredAppointments = computed(() =>
   store.appointments.filter((a) => {
     if (a.date !== selectedDate.value) return false
     if (selectedServiceId.value !== 'all' && a.serviceId !== selectedServiceId.value) return false
+    if (selectedEmployeeId.value !== 'all' && a.employeeId !== selectedEmployeeId.value) return false
     if (selectedStatus.value !== 'all' && a.status !== selectedStatus.value) return false
     return true
   })
@@ -95,7 +97,7 @@ const closeDetails = () => {
     </header>
 
     <section class="am-section space-y-3">
-      <div class="grid gap-3 text-xs sm:grid-cols-4">
+      <div class="grid gap-3 text-xs sm:grid-cols-5">
         <div>
           <label class="am-label" for="dateFilter">Дата</label>
           <input
@@ -147,6 +149,26 @@ const closeDetails = () => {
             </option>
             <option value="отменена">
               Отменена
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="am-label" for="employeeFilter">Мастер</label>
+          <select
+            id="employeeFilter"
+            v-model="selectedEmployeeId"
+            class="am-input"
+          >
+            <option value="all">
+              Все мастера
+            </option>
+            <option
+              v-for="employee in store.employees"
+              :key="employee.id"
+              :value="employee.id"
+            >
+              {{ employee.name }}
             </option>
           </select>
         </div>
