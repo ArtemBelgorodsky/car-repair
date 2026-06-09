@@ -206,6 +206,8 @@ export const employees = [
   {
     id: 'emp-001',
     name: 'Андрей Мельников',
+    login: 'master1',
+    password: 'master123',
     position: 'Мастер по ТО',
     specialization: 'Плановое обслуживание, масла, фильтры',
     phone: '+7 (900) 101-10-10',
@@ -213,6 +215,8 @@ export const employees = [
   {
     id: 'emp-002',
     name: 'Виктор Лебедев',
+    login: 'master2',
+    password: 'diag123',
     position: 'Диагност',
     specialization: 'Компьютерная диагностика, электрика',
     phone: '+7 (900) 202-20-20',
@@ -220,6 +224,8 @@ export const employees = [
   {
     id: 'emp-003',
     name: 'Илья Морозов',
+    login: 'master3',
+    password: 'brake123',
     position: 'Слесарь',
     specialization: 'Тормозная система, ходовая часть',
     phone: '+7 (900) 303-30-30',

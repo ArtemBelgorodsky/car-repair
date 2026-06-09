@@ -30,6 +30,14 @@ const readSavedState = () => {
   }
 }
 
+const mergeEmployeesWithDefaults = (savedEmployees = []) =>
+  initialEmployees.map((initialEmployee) => ({
+    ...initialEmployee,
+    ...(savedEmployees.find((employee) => employee.id === initialEmployee.id) ?? {}),
+    login: initialEmployee.login,
+    password: initialEmployee.password,
+  }))
+
 export const useAppStore = defineStore('app', () => {
   const savedState = readSavedState()
 
@@ -37,17 +45,22 @@ export const useAppStore = defineStore('app', () => {
   const isAdminLogged = ref(Boolean(savedState?.isAdminLogged))
   const users = ref(savedState?.users ?? [])
   const currentUserId = ref(savedState?.currentUserId ?? null)
+  const currentEmployeeId = ref(savedState?.currentEmployeeId ?? null)
 
   // Справочник услуг, список записей и отзывы клиентов
   const services = ref(savedState?.services ?? [...initialServices])
   const appointments = ref(savedState?.appointments ?? [...initialAppointments])
-  const employees = ref(savedState?.employees ?? [...initialEmployees])
+  const employees = ref(mergeEmployeesWithDefaults(savedState?.employees))
   const payrolls = ref(savedState?.payrolls ?? [...initialPayrolls])
   const reviews = ref(savedState?.reviews ?? [...initialReviews])
   const notifications = ref(savedState?.notifications ?? [])
 
   const currentUser = computed(() =>
     users.value.find((user) => user.id === currentUserId.value) ?? null
+  )
+
+  const currentEmployee = computed(() =>
+    employees.value.find((employee) => employee.id === currentEmployeeId.value) ?? null
   )
 
   const userAppointments = computed(() =>
@@ -63,7 +76,7 @@ export const useAppStore = defineStore('app', () => {
   )
 
   watch(
-    [services, appointments, employees, payrolls, reviews, notifications, users, currentUserId, isAdminLogged],
+    [services, appointments, employees, payrolls, reviews, notifications, users, currentUserId, currentEmployeeId, isAdminLogged],
     () => {
       localStorage.setItem(
         STORAGE_KEY,
@@ -76,6 +89,7 @@ export const useAppStore = defineStore('app', () => {
           notifications: notifications.value,
           users: users.value,
           currentUserId: currentUserId.value,
+          currentEmployeeId: currentEmployeeId.value,
           isAdminLogged: isAdminLogged.value,
         })
       )
@@ -302,6 +316,24 @@ export const useAppStore = defineStore('app', () => {
     currentUserId.value = null
   }
 
+  const loginEmployee = (login, password) => {
+    const normalizedLogin = login.trim().toLowerCase()
+    const employee = employees.value.find(
+      (item) => item.login === normalizedLogin && item.password === password
+    )
+
+    if (!employee) {
+      return false
+    }
+
+    currentEmployeeId.value = employee.id
+    return true
+  }
+
+  const logoutEmployee = () => {
+    currentEmployeeId.value = null
+  }
+
   const cancelOwnAppointment = (id) => {
     const appointment = appointments.value.find(
       (item) => item.id === id && item.userId === currentUserId.value
@@ -334,7 +366,9 @@ export const useAppStore = defineStore('app', () => {
     isAdminLogged,
     users,
     currentUserId,
+    currentEmployeeId,
     currentUser,
+    currentEmployee,
     userAppointments,
     userNotifications,
     services,
@@ -359,6 +393,8 @@ export const useAppStore = defineStore('app', () => {
     registerUser,
     loginUser,
     logoutUser,
+    loginEmployee,
+    logoutEmployee,
     cancelOwnAppointment,
     loginAdmin,
     logoutAdmin,

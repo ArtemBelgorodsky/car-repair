@@ -29,11 +29,27 @@ const router = createRouter({
       },
     },
     {
+      path: '/master/login',
+      name: 'master-login',
+      component: () => import('../views/MasterLoginView.vue'),
+      meta: {
+        public: true,
+      },
+    },
+    {
       path: '/profile/appointments',
       name: 'user-appointments',
       component: () => import('../views/MyAppointmentsView.vue'),
       meta: {
         requiresUser: true,
+      },
+    },
+    {
+      path: '/master',
+      name: 'master',
+      component: () => import('../views/MasterView.vue'),
+      meta: {
+        requiresEmployee: true,
       },
     },
     {
@@ -103,6 +119,10 @@ router.beforeEach((to) => {
         redirect: to.fullPath,
       },
     }
+  }
+
+  if (to.meta.requiresEmployee && !store.currentEmployee) {
+    return { name: 'master-login' }
   }
 
   return true

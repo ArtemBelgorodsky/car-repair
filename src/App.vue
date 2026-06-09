@@ -69,6 +69,12 @@ const userFirstName = computed(() => store.currentUser?.name.split(' ')[0] ?? ''
               Войти
             </RouterLink>
             <RouterLink
+              :to="store.currentEmployee ? '/master' : '/master/login'"
+              class="am-btn-secondary"
+            >
+              {{ store.currentEmployee ? 'Кабинет мастера' : 'Вход мастера' }}
+            </RouterLink>
+            <RouterLink
               to="/admin/login"
               class="am-btn-primary"
             >
